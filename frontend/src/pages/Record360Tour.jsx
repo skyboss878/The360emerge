@@ -98,17 +98,40 @@ const Record360Tour = () => {
         }
       }
       
+      console.log('MediaStream obtained:', mediaStream);
+      console.log('Video tracks:', mediaStream.getVideoTracks());
+      
       // Success!
       setStream(mediaStream);
       setPermissionState('granted');
       
+      // Wait a moment for state to update
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       if (videoRef.current) {
+        console.log('Setting video srcObject');
         videoRef.current.srcObject = mediaStream;
         
         // Ensure video plays
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current.play().catch(e => console.log('Video play error:', e));
+        videoRef.current.onloadedmetadata = async () => {
+          console.log('Video metadata loaded, attempting to play');
+          try {
+            await videoRef.current.play();
+            console.log('Video playing successfully');
+          } catch (playError) {
+            console.error('Video play error:', playError);
+          }
         };
+        
+        // Also try to play immediately
+        try {
+          await videoRef.current.play();
+          console.log('Video started playing');
+        } catch (e) {
+          console.log('Immediate play failed, waiting for metadata:', e);
+        }
+      } else {
+        console.error('Video ref is null!');
       }
       
       toast.success('✅ Camera ready! You can now record your tour.', { duration: 3000 });
@@ -385,14 +408,34 @@ const Record360Tour = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Camera View */}
           <div className="lg:col-span-2">
-            <div className="bg-black rounded-xl overflow-hidden relative aspect-video">
+            <div className="bg-black rounded-xl overflow-hidden relative" style={{ aspectRatio: '16/9', minHeight: '400px' }}>
               <video
                 ref={videoRef}
                 autoPlay
                 playsInline
                 muted
-                className="w-full h-full object-cover"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
+                  backgroundColor: '#000'
+                }}
+                onLoadedMetadata={(e) => {
+                  console.log('Video metadata loaded');
+                  e.target.play().catch(err => console.error('Video play error:', err));
+                }}
               />
+              
+              {/* Loading overlay if no stream */}
+              {!stream && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
+                  <div className="text-center text-white">
+                    <div className="w-16 h-16 border-4 border-purple-400 border-t-transparent rounded-full animate-spin mb-4 mx-auto"></div>
+                    <p className="text-lg">Initializing camera...</p>
+                  </div>
+                </div>
+              )}
               
               {/* Recording Indicator */}
               {recording && (
