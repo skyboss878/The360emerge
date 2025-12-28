@@ -369,6 +369,7 @@ test_plan:
     - "User Login Flow"
     - "Listing Creation"
     - "Dynamic Property Type Fields in Create Listing"
+    - "360° Tour Creation Workflow"
 
 agent_communication:
   - agent: "main"
