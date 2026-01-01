@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import api from '../api';
 import toast from 'react-hot-toast';
-import ProCamera360 from '../components/ProCamera360';
+import Camera360Capture from '../components/Camera360Capture';
 
 const Record360Tour = () => {
   const { listingId } = useParams();
@@ -95,13 +95,12 @@ const Record360Tour = () => {
     );
   }
 
-  // Show ProCamera360 component when recording
+  // Show Camera360Capture component when recording
   if (showCamera) {
     return (
-      <ProCamera360
+      <Camera360Capture
         onCapture={handleCaptureComplete}
         onClose={() => setShowCamera(false)}
-        propertyType={listing?.property_type || 'luxury'}
       />
     );
   }
